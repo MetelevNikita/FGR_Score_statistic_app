@@ -41,18 +41,8 @@ const rl = createInterface(
 rl.question('Введите ID игры ', async (query) => {
     console.log(`Запрашиваю данные для игры #${query}`)
 
-    getGame(query).then((data) => {
 
-
-    setInterval(() => {
-
-        const xml = json2xml(data, {compact: true, spaces: 4});
-        const outputPath = getOutputPath(`game-data-id#${query}.xml`, query)
-        fs.writeFileSync(outputPath, xml);
-        console.log(data)
-
-    }, 1000)
-
+    const imageQuery = await getGame(query)
 
     const logoTeanOne = async (id) => {
     try {
@@ -72,7 +62,7 @@ rl.question('Введите ID игры ', async (query) => {
         const outputPath = getOutputPath(`team-B-id#${query}.png`, query)
         fs.writeFileSync(outputPath, buffer);
 
-  
+
     } catch (error) {
         console.log("error in fetching game icon", error);
     }
@@ -104,13 +94,25 @@ rl.question('Введите ID игры ', async (query) => {
 
     // получаем логотипы команды
 
-    logoTeanOne(data.teamA.image)
-    logoTeanTwo(data.teamB.image)
+    logoTeanOne(imageQuery.teamA.image)
+    logoTeanTwo(imageQuery.teamB.image)
 
 
-})
+    setInterval(async () => {
 
-rl.close()
+ 
+
+        const statGame = await getGame(query)
+
+        const xml = json2xml(statGame, {compact: true, spaces: 4});
+        const outputPath = getOutputPath(`game-data-id#${query}.xml`, query)
+        fs.writeFileSync(outputPath, xml);
+        console.log(statGame);
+
+    }, 1000)
+
+
+    rl.close()
 
 })
 
@@ -145,7 +147,7 @@ const getGame = async (id) => {
             teamB: {
                 name: data.Data.TeamB.TeamNum,
                 shortName : data.Data.TeamB.ShortName,
-                score_B: data.Data.TeamA.Score,
+                score_B: data.Data.TeamB.Score,
                 image: data.Data.TeamB.TeamId
             }
         }
